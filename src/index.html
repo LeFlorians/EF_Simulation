@@ -9,7 +9,17 @@
 <body>
     <script>
         // Websocket client-side
-        const webSocket = new WebSocket('ws://localhost:443/');
+        const ws = new WebSocket('ws://localhost:8082/');
+
+        ws.onopen = (e) => {
+            ws.send("moin meister")
+        }
+
+        // test websocket
+        ws.onmessage = (e) => {
+            const msg = e.data
+            console.log("received message: " + msg)
+        }
     </script>
 
 
