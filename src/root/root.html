@@ -1,0 +1,27 @@
+<div>
+  <canvas id="myChart"></canvas>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+var xValues = [50,60,70,80,90,100,110,120,130,140,150];
+var yValues = [7,8,8,9,9,9,10,11,14,14,15];
+
+const chart = new Chart("myChart", {
+  type: "line",
+  data: {
+    labels: xValues,
+    datasets: [{
+      backgroundColor: "rgba(0,0,0,1.0)",
+      borderColor: "rgba(0,0,0,0.1)",
+      data: yValues
+    }]
+  },
+});
+
+setTimeout(()=> {yValues[0]=90;chart.update()}, 5000)
+setTimeout(()=> {yValue.push(5);chart.update()}, 5000)
+
+setTimeout(()=> {xValue.push(160);chart.update()}, 6000)
+</script>
