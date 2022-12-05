@@ -1,0 +1,24 @@
+{
+  "name": "ef-sumulation",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeFlorians/EF_Simulation.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/LeFlorians/EF_Simulation/issues"
+  },
+  "homepage": "https://github.com/LeFlorians/EF_Simulation#readme",
+  "dependencies": {
+    "express": "^4.18.2",
+    "express-session": "^1.17.3",
+    "ws": "^8.11.0"
+  }
+}
