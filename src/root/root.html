@@ -35,7 +35,7 @@ function removeData(chart) {
     chart.data.datasets.forEach((dataset) => {
         dataset.data.shift();
     });
-    chart.update();
+    chart.update("none");
 }
 function addDataFromForm() {
     let y = Math.floor(Math.random() * 10)    
