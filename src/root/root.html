@@ -1,27 +1,46 @@
+<div class="chart-container" style="position: relative; height:40vh; width:95vw">
+    <canvas id="chart" width="100" height="10"></canvas>
+</div>
 <div>
-  <canvas id="myChart"></canvas>
+
+  <button onclick="addDataFromForm()">MOOOOOIN</button>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>
-var xValues = [50,60,70,80,90,100,110,120,130,140,150];
-var yValues = [7,8,8,9,9,9,10,11,14,14,15];
 
-const chart = new Chart("myChart", {
+const ctx = document.getElementById('chart');
+
+const chart = new Chart(ctx, {
   type: "line",
   data: {
-    labels: xValues,
+    labels: [0,0,0,0,0,0,0,0,0,0],
     datasets: [{
       backgroundColor: "rgba(0,0,0,1.0)",
       borderColor: "rgba(0,0,0,0.1)",
-      data: yValues
-    }]
+      data: [0,0,0,0,0,0,0,0,0,0]
+    }] 
   },
 });
+function addData(chart, label, data) {
+    chart.data.labels.push(label);
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.push(data);
+    });
+    chart.update("none");
+}
+function removeData(chart) {
+    chart.data.labels.shift();
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.shift();
+    });
+    chart.update();
+}
+function addDataFromForm() {
+    let y = Math.floor(Math.random() * 10)    
+    addData(chart, y, y);
+    removeData(chart)
+}
 
-setTimeout(()=> {yValues[0]=90;chart.update()}, 5000)
-setTimeout(()=> {yValue.push(5);chart.update()}, 5000)
-
-setTimeout(()=> {xValue.push(160);chart.update()}, 6000)
 </script>
