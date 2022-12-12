@@ -5,22 +5,86 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <script>
-        // Websocket client-side
-        const ws = new WebSocket('ws://localhost:8082/');
 
-        ws.onopen = (e) => {
-            ws.send("moin meister")
+        const storage = window.localStorage;
+
+        var send;
+        const init = (onmessage, onopen) => {
+            // Websocket client-side
+            const ws = new WebSocket('ws://localhost:8082/');
+
+            send = (obj) => ws.send(JSON.stringify(obj))
+
+            ws.onopen = (e) => {
+                onopen()
+            }
+
+            // test websocket
+            ws.onmessage = (e) => {
+                onmessage(JSON.parse(e.data))
+            }
         }
 
-        // test websocket
-        ws.onmessage = (e) => {
-            const msg = e.data
-            console.log("received message: " + msg)
+        // test
+        const persistent = ["userId", "ownerKey", "gameId"]
+        init(msg => {
+
+            // update page
+            if(msg.page) {
+                fetch(man.page).then(result => {
+                    document.getElementById("page").innerHTML = result.text()
+                })
+            }
+
+            // save persistent values
+            for (const [key, value] of Object.entries(msg)) {
+                if(persistent.includes(key))
+                    storage.setItem(key, value)
+            }
+
+        }, () => {
+            console.log("connected")
+            send({
+                name: "moinmeister"
+            })
+        })
+
+
+        function create_game() {
+            send({
+                create_game: true,
+            })
         }
+
+        function join_game() {
+            // get code
+            const code = document.getElementById("game_id_input").value
+            // request game
+            send({
+                join_game: code
+            })
+        }
+
+
     </script>
+
+    <div id="page">
+        <div id="mode_select">
+            <div class="section" id="cgsection">
+                <button class="styled" onclick="create_game()">Create Game</button>
+
+            </div>
+            <div class="section">
+                <input class="styled" type="text" id="game_id_input" placeholder="Enter Code...">
+                <button class="styled" onclick="join_game()">Join Game</button>
+
+            </div>
+        </div>
+    </div>
 
 
 </body>

@@ -1,5 +1,6 @@
 const express = require("express")
 const path = require("path")
+const crypto = require('crypto');
 
 const PORT = 8080;
 
@@ -11,6 +12,21 @@ app.use(express.json());
 
 // serve static js
 app.use(express.static("src/"))
+
+gameIDs = []
+function generateUniqueId() {
+  let id = "";
+  do {
+    const possibleCharacters = 
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+    id = "";
+
+    for (let i = 0; i < 6; i++)
+      id += possibleCharacters.charAt(Math.floor(Math.random() * possibleCharacters.length));
+  } while(gameIDs.includes(id));
+  return id;
+}
 
 // setup express-session
 const session = require("express-session")
@@ -38,18 +54,75 @@ app.get('/', (req, res) => {
 })
 
 // create websocket
-const { Server } = require('ws');
- 
-const websocket = new Server({ port: 8082 });
-websocket.on('connection', (ws) => {
-   console.log('New client connected!'); 
-   ws.on('close', () => console.log('Client has disconnected!'));
-});
- 
-websocket.on('message', (evt) => {
-  console.log("received message: " + evt.data)
-})
+const { WebSocketServer } = require('ws');
 
+class Player {
+  constructor(uid) {
+    this.userId = uid
+    this.x = 0
+    this.y = 0
+  }
+}
+
+
+class Game {
+  constructor(id, ownerKey) {
+    this.currentId = 0;
+    this.ownerKey = ownerKey
+    this.gameId = id
+    this.players = {}
+  }
+  destroy() {
+    gameIDs.remove(this.gameId)
+  }
+}
+
+
+const games = {}
+
+const websocket = new WebSocketServer({ port: 8082 });
+websocket.on('connection', (ws) => {
+    const send = (obj) => ws.send(JSON.stringify(obj))
+    ws.on('close', () => console.log('Client has disconnected!'));
+
+    console.log('New client connected!'); 
+    ws.on('message', (data) => {
+    data = JSON.parse(data)
+
+
+
+    // process requests
+    if(data.join_game) {
+      const game = games[data.join_game]
+      if(game) {
+        const uid = game.currentId++
+        ws.send({
+          page: "clients/client.html",
+          userId: uid
+        })
+        ws.game = game
+        game.players[uid] = new Player(uid)
+      }
+    }
+
+    if(data.create_game) {
+      const game = new Game(generateUniqueId(), crypto.randomBytes(16).toString("hex"))
+      games[game.gameId] = game
+      ws.send({
+        page: "root/root.html",
+        gameId: game.gameId,
+        ownerKey: game.ownerKey,
+      })
+      ws.game = game
+    }
+
+
+
+
+  })
+
+   send({name: "hellothere"})
+});
 
 // setInterval(() => {
 //    websocket.clients.forEach((client) => {
