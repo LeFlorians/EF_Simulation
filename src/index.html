@@ -33,11 +33,11 @@
         const persistent = ["userId", "ownerKey", "gameId"]
         init(msg => {
 
+            console.log("Received message: ", msg)
+
             // update page
             if(msg.page) {
-                fetch(man.page).then(result => {
-                    document.getElementById("page").innerHTML = result.text()
-                })
+                window.location.replace(msg.page)
             }
 
             // save persistent values
@@ -47,10 +47,7 @@
             }
 
         }, () => {
-            console.log("connected")
-            send({
-                name: "moinmeister"
-            })
+            console.log("Connected successfully")
         })
 
 

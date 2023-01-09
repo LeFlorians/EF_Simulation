@@ -87,41 +87,36 @@ websocket.on('connection', (ws) => {
 
     console.log('New client connected!'); 
     ws.on('message', (data) => {
-    data = JSON.parse(data)
+      data = JSON.parse(data)
 
+      console.log("Received message: ", data)
 
-
-    // process requests
-    if(data.join_game) {
-      const game = games[data.join_game]
-      if(game) {
-        const uid = game.currentId++
-        ws.send({
-          page: "clients/client.html",
-          userId: uid
-        })
-        ws.game = game
-        game.players[uid] = new Player(uid)
+      // process requests
+      if(data.join_game) {
+        const game = games[data.join_game]
+        if(game) {
+          const uid = game.currentId++
+          send({
+            page: "clients/client.html",
+            userId: uid
+          })
+          ws.game = game
+          game.players[uid] = new Player(uid)
+        }
       }
-    }
 
-    if(data.create_game) {
-      const game = new Game(generateUniqueId(), crypto.randomBytes(16).toString("hex"))
-      games[game.gameId] = game
-      ws.send({
-        page: "root/root.html",
-        gameId: game.gameId,
-        ownerKey: game.ownerKey,
-      })
-      ws.game = game
-    }
-
-
-
+      if(data.create_game) {
+        const game = new Game(generateUniqueId(), crypto.randomBytes(16).toString("hex"))
+        games[game.gameId] = game
+        ws.game = game
+        send({
+          page: "root/root.html",
+          gameId: game.gameId,
+          ownerKey: game.ownerKey,
+        })
+      }
 
   })
-
-   send({name: "hellothere"})
 });
 
 // setInterval(() => {
