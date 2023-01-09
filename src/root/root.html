@@ -1,14 +1,18 @@
+<div id="gameCode">
+  <h1 id="gameId">Game Code:</h1>
+</div>
 <div class="chart-container" style="position: relative; height:40vh; width:95vw">
     <canvas id="chart" width="100" height="10"></canvas>
 </div>
 <div>
 
-  <button onclick="addDataFromForm()">MOOOOOIN</button>
+  <button onclick="addDataFromForm()">Add Random Data</button>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 <script>
+
+// show game id
+document.getElementById("gameId").innerText += " " + storage.getItem("gameId")
 
 const ctx = document.getElementById('chart');
 
@@ -38,7 +42,7 @@ function removeData(chart) {
     chart.update("none");
 }
 function addDataFromForm() {
-    let y = Math.floor(Math.random() * 10)    
+    let y = Math.floor(Math.random() * 10)
     addData(chart, y, y);
     removeData(chart)
 }

@@ -13,6 +13,10 @@ app.use(express.json());
 // serve static js
 app.use(express.static("src/"))
 
+function genSecret() {
+  return crypto.randomBytes(16).toString("hex")
+}
+
 gameIDs = []
 function generateUniqueId() {
   let id = "";
@@ -57,8 +61,9 @@ app.get('/', (req, res) => {
 const { WebSocketServer } = require('ws');
 
 class Player {
-  constructor(uid) {
+  constructor(uid, secret) {
     this.userId = uid
+    this.secret = secret
     this.x = 0
     this.y = 0
   }
@@ -66,9 +71,9 @@ class Player {
 
 
 class Game {
-  constructor(id, ownerKey) {
+  constructor(id, secret) {
     this.currentId = 0;
-    this.ownerKey = ownerKey
+    this.secret = secret
     this.gameId = id
     this.players = {}
   }
@@ -95,24 +100,28 @@ websocket.on('connection', (ws) => {
       if(data.join_game) {
         const game = games[data.join_game]
         if(game) {
+          console.log("Client joins:", game)
           const uid = game.currentId++
+          const player = game.players[uid] = new Player(uid, genSecret())
           send({
             page: "clients/client.html",
-            userId: uid
+            userId: uid,
+            secret: player.secret
           })
           ws.game = game
-          game.players[uid] = new Player(uid)
+        } else {
+          console.log("Game not found")
         }
       }
 
       if(data.create_game) {
-        const game = new Game(generateUniqueId(), crypto.randomBytes(16).toString("hex"))
+        const game = new Game(generateUniqueId(), genSecret())
         games[game.gameId] = game
         ws.game = game
         send({
           page: "root/root.html",
           gameId: game.gameId,
-          ownerKey: game.ownerKey,
+          secret: game.secret,
         })
       }
 
