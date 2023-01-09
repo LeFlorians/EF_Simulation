@@ -6,6 +6,7 @@ html,body {
     margin: 0;
     color: ghostwhite;
     font-family: monospace;
+    overflow: hidden;
 }
 
 #mode_select {
@@ -56,4 +57,10 @@ button {
 input {
     margin-right: 10%;
 
+}
+
+#credits {
+    color: rgba(50, 50, 50, .7);
+    position: absolute;
+    bottom: 5%;
 }

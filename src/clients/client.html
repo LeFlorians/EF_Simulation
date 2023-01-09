@@ -1,0 +1,15 @@
+<script>
+    let app = new PIXI.Application({ width: window.innerWidth, height: window.innerHeight });
+    document.getElementById("page").appendChild(app.view);
+    window.addEventListener("resize", function() {
+        app.renderer.resize(window.innerWidth, window.innerHeight);
+    });
+
+    let sprite = PIXI.Sprite.from('sample.png');
+
+    app.ticker.add((delta) => {
+        elapsed += delta;
+        sprite.x = 100.0 + Math.cos(elapsed/50.0) * 100.0;
+    });
+</script>
+<h3 id="credits">Credits to Lanea Zimmerman for textures. https://opengameart.org/content/tiny-16-basic</h3>
