@@ -8,7 +8,7 @@ html,body {
     font-family: monospace;
     overflow: hidden;
 }
-
+/*sd*/
 #mode_select {
     display: flex;
     flex-direction: column;
