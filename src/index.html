@@ -32,11 +32,33 @@
             }
         }
 
+        class Player {
+            constructor(uid) {
+                this.x = 0
+                this.y = 0
+                this.uid = uid
+            }
+        }
+        var players = {}
+
         // test
         const persistent = ["userId", "secret", "gameId"]
         init(msg => {
 
             console.log("Received message: ", msg)
+
+            if(typeof(msg.gameEvents) == "array") {
+                for(var e in msg.gameEvents) {
+                    switch(e.type) {
+                        // ---------------------------- HANDLE GAME EVENTS ------------
+                        case "playerMove": {
+                            players[e.uid].x = e.x
+                            players[e.uid].y = e.y
+                        }
+                        // ---------------------------- HANDLE GAME EVENTS ------------
+                    }
+                }
+            }
 
             // update page
             if(msg.page) {
