@@ -85,12 +85,28 @@ class Game {
     this.players = {}
   }
   destroy() {
-    gameIDs.remove(this.gameId)
+    clearInterval(this.sid)
+    games.remove(this.gameId)
+  }
+  startScheduler() {
+    // 1 TPS
+    this.sid = setInterval(() => {
+
+      // events for each player
+      this.players.foreach(p => {
+
+
+      })
+
+    }, 1)
   }
 }
 
 
 const games = {}
+
+// Anticheat constatns
+const maxVelocity = 5 // units / second
 
 const websocket = new WebSocketServer({ port: 8082 });
 websocket.on('connection', (ws) => {
@@ -122,9 +138,9 @@ websocket.on('connection', (ws) => {
             const moveX = x - player.x, moveY = y.player.y
             // limit movement length to deltaTime
             const norm = Math.sqrt(moveX*moveX+moveY*moveY)
-            if(norm > deltaTime) {
+            if(norm > deltaTime * maxVelocity) {
               // Anticheat trigger
-              x = moveX / deltaTime + playerX, y / moveY + playerY
+              x = moveX / deltaTime + player.x, y / moveY + player.y
               // also send to player
               sendMe({
                 gameEvents: [{type: "playerMove", uid: player.uid, x, y}]
