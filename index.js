@@ -61,12 +61,19 @@ app.get('/', (req, res) => {
 const { WebSocketServer } = require('ws');
 
 class Player {
-  constructor(uid, secret) {
-    this.userId = uid
+  constructor(uid, secret, ws) {
+    this.uid = uid
     this.secret = secret
     this.x = 0
     this.y = 0
+
+    this.ws = ws
+    this.lastMoveTimestamp = 0
   }
+
+  send(obj) {
+    this.ws.send(JSON.stringify(obj))
+  } 
 }
 
 
@@ -74,20 +81,35 @@ class Game {
   constructor(id, secret) {
     this.currentId = 0;
     this.secret = secret
-    this.gameId = id
+    this.gid = id
     this.players = {}
   }
   destroy() {
-    gameIDs.remove(this.gameId)
+    clearInterval(this.sid)
+    games.remove(this.gid)
+  }
+  startScheduler() {
+    // 1 TPS
+    this.sid = setInterval(() => {
+
+      // events for each player
+      Object.values(this.players).foreach(p => {
+
+      })
+
+    }, 1)
   }
 }
 
 
 const games = {}
 
+// Anticheat constatns
+const maxVelocity = 5 // units / second
+
 const websocket = new WebSocketServer({ port: 8082 });
 websocket.on('connection', (ws) => {
-    const send = (obj) => ws.send(JSON.stringify(obj))
+  const sendMe = (obj) => { ws.send(JSON.stringify(obj)) };
     ws.on('close', () => console.log('Client has disconnected!'));
 
     console.log('New client connected!'); 
@@ -96,19 +118,97 @@ websocket.on('connection', (ws) => {
 
       console.log("Received message: ", data)
 
+      if(data.game_event == true) {
+        const player = ws.player
+        const game = ws.game
+        if(!game || !player)
+          return;
+
+        // timestamp in seconds
+        const timestamp = Date.now() / 1000
+
+        // handle game events
+        switch(data.type) {
+          // ---------------------------- HANDLE GAME EVENTS ------------
+          case "playerMove": {
+            // move to x y
+            var x = data.x, y = data.y
+            const deltaTime = Math.min(1, timestamp - player.lastMoveTimestamp)
+            const moveX = x - player.x, moveY = y.player.y
+            // limit movement length to deltaTime
+            const norm = Math.sqrt(moveX*moveX+moveY*moveY)
+            if(norm > deltaTime * maxVelocity) {
+              // Anticheat trigger
+              x = moveX / deltaTime + player.x, y / moveY + player.y
+              // also send to player
+              sendMe({
+                gameEvents: [{type: "playerMove", uid: player.uid, x, y}]
+              })
+            } // else x,y are good
+            // update player timestamp
+            player.lastMoveTimestamp = timestamp
+            // broadcast new positions
+            game.players.filter(p => p.uid != player.uid).foreach(p => 
+              p.send({
+                gameEvents: [{type: "playerMove", uid: player.uid, x, y}]
+              })
+            )
+
+          }
+
+
+          // ---------------------------- HANDLE GAME EVENTS ------------
+        }
+      }
+
       // process requests
       if(data.join_game) {
         const game = games[data.join_game]
         if(game) {
+          if(game.gid === data.gid) {
+            const player = game.players[data.uid]
+            if(player.secret === data.secret) {
+              ws.game = game
+              ws.player = player
+
+              // TODO: refactor
+              sendMe({
+                page: "clients/client.html",
+                uid: uid,
+                gid: game.gid,
+                secret: player.secret,
+
+                // send all game_events
+                gameEvents: Object.values(game.players).map(p => ({
+                  type: "playerMove",
+                  x: p.x,
+                  y: p.y,
+                  uid: p.uid
+                }))
+              })
+              return;
+            }
+          }
+
           console.log("Client joins:", game)
           const uid = game.currentId++
-          const player = game.players[uid] = new Player(uid, genSecret())
-          send({
-            page: "clients/client.html",
-            userId: uid,
-            secret: player.secret
-          })
+          const player = game.players[uid] = new Player(uid, genSecret(), ws)
           ws.game = game
+          ws.player = player
+          sendMe({
+            page: "clients/client.html",
+            uid: uid,
+            gid: game.gid,
+            secret: player.secret,
+
+            // send all game_events
+            gameEvents: Object.values(game.players).map(p => ({
+              type: "playerMove",
+              x: p.x,
+              y: p.y,
+              uid: p.uid
+            }))
+          })
         } else {
           console.log("Game not found")
         }
@@ -116,12 +216,12 @@ websocket.on('connection', (ws) => {
 
       if(data.create_game) {
         const game = new Game(generateUniqueId(), genSecret())
-        games[game.gameId] = game
+        games[game.gid] = game
         ws.game = game
-        send({
+        sendMe({
           page: "root/root.html",
-          gameId: game.gameId,
-          secret: game.secret,
+          gid: game.gid,
+          secret: game.secret
         })
       }
 
