@@ -26,6 +26,11 @@
                 onopen()
             }
 
+            ws.onclose = (e) => {
+                console.log("Disconnected!")
+                document.getElementById("disconnected").style.display = "block";
+            }
+
             // test websocket
             ws.onmessage = (e) => {
                 onmessage(JSON.parse(e.data))
@@ -39,25 +44,34 @@
                 this.uid = uid
             }
         }
+
+        function getPlayer(uid) {
+            p = players[uid]
+            if(!p)
+                players[uid] = p = new Player(uid)
+            return p
+        }
         var players = {}
 
-        // test
-        const persistent = ["userId", "secret", "gameId"]
+        // Persistent values, access through storage.getItem(key)
+        const persistent = ["uid", "secret", "gid"]
         init(msg => {
 
             console.log("Received message: ", msg)
 
-            if(typeof(msg.gameEvents) == "array") {
-                for(var e in msg.gameEvents) {
+            if(Array.isArray(msg.gameEvents)) {
+                msg.gameEvents.forEach(e => {
+                    console.log("Processing " + e.type + " event")
                     switch(e.type) {
                         // ---------------------------- HANDLE GAME EVENTS ------------
                         case "playerMove": {
-                            players[e.uid].x = e.x
-                            players[e.uid].y = e.y
+                            const p = getPlayer(e.uid)
+                            p.x = e.x
+                            p.y = e.y
                         }
                         // ---------------------------- HANDLE GAME EVENTS ------------
                     }
-                }
+                })
             }
 
             // update page
@@ -104,7 +118,10 @@
             const code = document.getElementById("game_id_input").value
             // request game
             send({
-                join_game: code
+                join_game: code,
+                uid: storage.getItem("uid"),
+                gid: storage.getItem("gid"),
+                secret: storage.getItem("secret")
             })
         }
 
@@ -124,6 +141,10 @@
             </div>
         </div>
     </div>
+
+    <h1 style="position:absolute;top:0;left:0;color:red;display:none;" id="disconnected">
+        Disconnected
+    </h1>
 
 
 </body>

@@ -62,7 +62,7 @@ const { WebSocketServer } = require('ws');
 
 class Player {
   constructor(uid, secret, ws) {
-    this.userId = uid
+    this.uid = uid
     this.secret = secret
     this.x = 0
     this.y = 0
@@ -81,20 +81,19 @@ class Game {
   constructor(id, secret) {
     this.currentId = 0;
     this.secret = secret
-    this.gameId = id
+    this.gid = id
     this.players = {}
   }
   destroy() {
     clearInterval(this.sid)
-    games.remove(this.gameId)
+    games.remove(this.gid)
   }
   startScheduler() {
     // 1 TPS
     this.sid = setInterval(() => {
 
       // events for each player
-      this.players.foreach(p => {
-
+      Object.values(this.players).foreach(p => {
 
       })
 
@@ -110,7 +109,7 @@ const maxVelocity = 5 // units / second
 
 const websocket = new WebSocketServer({ port: 8082 });
 websocket.on('connection', (ws) => {
-  const sendMe = (obj) => { this.ws.send(JSON.stringify(obj)) };
+  const sendMe = (obj) => { ws.send(JSON.stringify(obj)) };
     ws.on('close', () => console.log('Client has disconnected!'));
 
     console.log('New client connected!'); 
@@ -166,24 +165,50 @@ websocket.on('connection', (ws) => {
       if(data.join_game) {
         const game = games[data.join_game]
         if(game) {
+          if(game.gid === data.gid) {
+            const player = game.players[data.uid]
+            if(player.secret === data.secret) {
+              ws.game = game
+              ws.player = player
+
+              // TODO: refactor
+              sendMe({
+                page: "clients/client.html",
+                uid: uid,
+                gid: game.gid,
+                secret: player.secret,
+
+                // send all game_events
+                gameEvents: Object.values(game.players).map(p => ({
+                  type: "playerMove",
+                  x: p.x,
+                  y: p.y,
+                  uid: p.uid
+                }))
+              })
+              return;
+            }
+          }
+
           console.log("Client joins:", game)
           const uid = game.currentId++
           const player = game.players[uid] = new Player(uid, genSecret(), ws)
+          ws.game = game
+          ws.player = player
           sendMe({
             page: "clients/client.html",
-            userId: uid,
+            uid: uid,
+            gid: game.gid,
             secret: player.secret,
 
             // send all game_events
-            gameEvents: game.players.map(p => ({
+            gameEvents: Object.values(game.players).map(p => ({
               type: "playerMove",
               x: p.x,
               y: p.y,
               uid: p.uid
             }))
           })
-          ws.game = game
-          ws.player = player
         } else {
           console.log("Game not found")
         }
@@ -191,11 +216,11 @@ websocket.on('connection', (ws) => {
 
       if(data.create_game) {
         const game = new Game(generateUniqueId(), genSecret())
-        games[game.gameId] = game
+        games[game.gid] = game
         ws.game = game
         sendMe({
           page: "root/root.html",
-          gameId: game.gameId,
+          gid: game.gid,
           secret: game.secret
         })
       }
