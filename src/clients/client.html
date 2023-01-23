@@ -19,21 +19,26 @@
     keys[e.key] = false
   })
 
-  let elapsed = 0
-  app.ticker.add((delta) => {
-    elapsed += delta
-    if(elapsed <= 50)
-      return
+  const deltaTime = 0.2;
+  const speed = 5;
+  setInterval(() => {
+    const playerMe = me()
 
-    elapsed = 0
-
-    v_x = (keys["A"] ? -1 : 0) + (keys["D"] ? 1 : 0)
-    v_y = (keys["S"] ? -1 : 0) + (keys["W"] ? 1 : 0)
-    norm = Math.sqrt(v_x * v_x + v_y * v_x)
-    if(norm != 0) {
-
+    v_x = (keys["a"] ? -1 : 0) + (keys["d"] ? 1 : 0)
+    v_y = (keys["s"] ? -1 : 0) + (keys["w"] ? 1 : 0)
+    norm = Math.sqrt(v_x * v_x + v_y * v_y)
+    let velocity = speed * deltaTime
+    if(norm != 0){
+      velocity /= norm
+      send({
+          game_event: true,
+          type: "playerMove",
+          x: playerMe.x += v_x * velocity,
+          y: playerMe.y += v_y * velocity
+        })
     }
-  });
+    elapsed = 0
+  }, deltaTime * 1000 + 5); // add a correction to prevent faulty anti-cheat triggers
 
   function myFunction(x) {
     x.classList.toggle("change");
@@ -65,8 +70,8 @@
     display: inline-block;
     cursor: pointer;
     position: absolute;
-    bottom: 5;
-    right: 5;
+    bottom: 5px;
+    right: 5px;
   }
 
   .bar1,
@@ -95,8 +100,8 @@
   }
   .income {
     position: absolute;
-    top: 5;
-    left: 5;
+    top: 5px;
+    left: 5px;
     width: 300px;
     height: 150px;
     border: 3px solid black;
@@ -104,8 +109,8 @@
   }
   .wealth {
     position: absolute;
-    top: 5;
-    right: 5;
+    top: 5px;
+    right: 5px;
     width: 150px;
     height: 200px;
     border: 3px solid black;
@@ -113,8 +118,8 @@
   }
   .chat {
     position: absolute;
-    bottom: 5;
-    left: 5;
+    bottom: 5px;
+    left: 5px;
     width: 350px;
     height: 400px;
     border: 3px solid black;
@@ -122,7 +127,7 @@
   }
 </style>
 
-
+<script>
 
 const atlasData = {
   frames: {
@@ -245,3 +250,4 @@ const atlasData = {
       }
   }
 }
+</script>

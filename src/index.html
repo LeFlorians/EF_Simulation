@@ -53,6 +53,10 @@
         }
         var players = {}
 
+        function me() {
+            return getPlayer(storage.getItem("uid"))
+        }
+
         // Persistent values, access through storage.getItem(key)
         const persistent = ["uid", "secret", "gid"]
         init(msg => {
@@ -110,6 +114,8 @@
         function create_game() {
             send({
                 create_game: true,
+                secret: storage.getItem("secret"),
+                gid: storage.getItem("gid")
             })
         }
 

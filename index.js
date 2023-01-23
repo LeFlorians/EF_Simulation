@@ -110,7 +110,11 @@ const maxVelocity = 5 // units / second
 const websocket = new WebSocketServer({ port: 8082 });
 websocket.on('connection', (ws) => {
   const sendMe = (obj) => { ws.send(JSON.stringify(obj)) };
-    ws.on('close', () => console.log('Client has disconnected!'));
+    ws.on('close', () => {
+      console.log('Client has disconnected!'); 
+      if(ws.player?.ws) 
+        ws.player.ws = null
+    });
 
     console.log('New client connected!'); 
     ws.on('message', (data) => {
@@ -134,7 +138,7 @@ websocket.on('connection', (ws) => {
             // move to x y
             var x = data.x, y = data.y
             const deltaTime = Math.min(1, timestamp - player.lastMoveTimestamp)
-            const moveX = x - player.x, moveY = y.player.y
+            const moveX = x - player.x, moveY = y - player.y
             // limit movement length to deltaTime
             const norm = Math.sqrt(moveX*moveX+moveY*moveY)
             if(norm > deltaTime * maxVelocity) {
@@ -144,13 +148,14 @@ websocket.on('connection', (ws) => {
               sendMe({
                 gameEvents: [{type: "playerMove", uid: player.uid, x, y}]
               })
-              console.log("Anticheat trigger by player " + player.uid)
+              console.log("Anticheat trigger by player " + player.uid + ". His speed is " + norm / deltaTime)
             } // else x,y are good
             // update player timestamp
             player.lastMoveTimestamp = timestamp
+            player.x = x, player.y = y
 
             // broadcast new positions
-            game.players.filter(p => p.uid != player.uid).foreach(p => 
+            Object.values(game.players).filter(p => p.uid != player.uid).forEach(p => 
               p.send({
                 gameEvents: [{type: "playerMove", uid: player.uid, x, y}]
               })
@@ -169,9 +174,11 @@ websocket.on('connection', (ws) => {
         if(game) {
           let player, uid
 
-          if(game.gid === data.gid && game.players[data.uid]?.secret === data.secret) {
-            player = game.players[data.uid]
+          if(game.gid === data.gid && data.secret
+              && (player = game.players[data.uid])?.secret === data.secret
+              && player.ws == null) {
             uid = data.uid
+            player.ws = ws
           } else {
             uid = game.currentId++
             player = game.players[uid] = new Player(uid, genSecret(), ws)
@@ -201,7 +208,11 @@ websocket.on('connection', (ws) => {
       }
 
       if(data.create_game) {
-        const game = new Game(generateUniqueId(), genSecret())
+        let game
+        if(data.secret && data.gid && (games[data.gid]?.secret === data.secret))
+          game = games[data.gid]
+        else 
+          game = new Game(generateUniqueId(), genSecret())
         games[game.gid] = game
         ws.game = game
         sendMe({
