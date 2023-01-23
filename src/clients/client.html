@@ -10,9 +10,29 @@
 
   let sprite = PIXI.Sprite.from("sample.png");
 
+  // keyboard events
+  keys = {}
+  window.addEventListener("keydown", e => {
+    keys[e.key] = true
+  })
+  window.addEventListener("keyup", e => {
+    keys[e.key] = false
+  })
+
+  let elapsed = 0
   app.ticker.add((delta) => {
-    elapsed += delta;
-    sprite.x = 100.0 + Math.cos(elapsed / 50.0) * 100.0;
+    elapsed += delta
+    if(elapsed <= 50)
+      return
+
+    elapsed = 0
+
+    v_x = (keys["A"] ? -1 : 0) + (keys["D"] ? 1 : 0)
+    v_y = (keys["S"] ? -1 : 0) + (keys["W"] ? 1 : 0)
+    norm = Math.sqrt(v_x * v_x + v_y * v_x)
+    if(norm != 0) {
+
+    }
   });
 
   function myFunction(x) {

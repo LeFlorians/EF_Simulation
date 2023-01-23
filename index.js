@@ -104,7 +104,7 @@ class Game {
 
 const games = {}
 
-// Anticheat constatns
+// Anticheat constants
 const maxVelocity = 5 // units / second
 
 const websocket = new WebSocketServer({ port: 8082 });
@@ -144,9 +144,11 @@ websocket.on('connection', (ws) => {
               sendMe({
                 gameEvents: [{type: "playerMove", uid: player.uid, x, y}]
               })
+              console.log("Anticheat trigger by player " + player.uid)
             } // else x,y are good
             // update player timestamp
             player.lastMoveTimestamp = timestamp
+
             // broadcast new positions
             game.players.filter(p => p.uid != player.uid).foreach(p => 
               p.send({
@@ -165,34 +167,18 @@ websocket.on('connection', (ws) => {
       if(data.join_game) {
         const game = games[data.join_game]
         if(game) {
-          if(game.gid === data.gid) {
-            const player = game.players[data.uid]
-            if(player.secret === data.secret) {
-              ws.game = game
-              ws.player = player
+          let player, uid
 
-              // TODO: refactor
-              sendMe({
-                page: "clients/client.html",
-                uid: uid,
-                gid: game.gid,
-                secret: player.secret,
-
-                // send all game_events
-                gameEvents: Object.values(game.players).map(p => ({
-                  type: "playerMove",
-                  x: p.x,
-                  y: p.y,
-                  uid: p.uid
-                }))
-              })
-              return;
-            }
+          if(game.gid === data.gid && game.players[data.uid]?.secret === data.secret) {
+            player = game.players[data.uid]
+            uid = data.uid
+          } else {
+            uid = game.currentId++
+            player = game.players[uid] = new Player(uid, genSecret(), ws)
           }
 
           console.log("Client joins:", game)
-          const uid = game.currentId++
-          const player = game.players[uid] = new Player(uid, genSecret(), ws)
+
           ws.game = game
           ws.player = player
           sendMe({
