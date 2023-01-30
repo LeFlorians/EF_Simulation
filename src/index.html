@@ -63,23 +63,9 @@
 
             console.log("Received message: ", msg)
 
-            if(Array.isArray(msg.gameEvents)) {
-                msg.gameEvents.forEach(e => {
-                    console.log("Processing " + e.type + " event")
-                    switch(e.type) {
-                        // ---------------------------- HANDLE GAME EVENTS ------------
-                        case "playerMove": {
-                            const p = getPlayer(e.uid)
-                            p.x = e.x
-                            p.y = e.y
-                        }
-                        // ---------------------------- HANDLE GAME EVENTS ------------
-                    }
-                })
-            }
-
             // update page
             if(msg.page) {
+                console.log("update page")
                 fetch(msg.page)
                 .then(data => {
                     data.text().then(text => {
@@ -97,6 +83,28 @@
                         oldScriptEl.parentNode.replaceChild(newScriptEl, oldScriptEl);
                     });
                     })
+                })
+            }
+
+            if(Array.isArray(msg.gameEvents)) {
+                msg.gameEvents.forEach(e => {
+                    console.log("Processing " + e.type + " event")
+                    switch(e.type) {
+                        // ---------------------------- HANDLE GAME EVENTS ------------
+                        case "playerMove": {
+                            const p = getPlayer(e.uid)
+                            p.x = e.x
+                            p.y = e.y
+                        }
+
+                        case "playerMessage": {
+                            // Append message to chat
+                            const chat = document.getElementById("chat_history")
+                            if(chat)
+                                chat.innerText += "\n[" + e.uid + "] " + e.text;
+                        }
+                        // ---------------------------- HANDLE GAME EVENTS ------------
+                    }
                 })
             }
 

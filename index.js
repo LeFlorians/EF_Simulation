@@ -83,6 +83,7 @@ class Game {
     this.secret = secret
     this.gid = id
     this.players = {}
+    this.messages = []
   }
   destroy() {
     clearInterval(this.sid)
@@ -163,6 +164,35 @@ websocket.on('connection', (ws) => {
 
           }
 
+          case "playerMessage": {
+            let text = data.text
+            if(!text)
+              return
+
+            text = text.replace(/(\r\n|\n|\r|\[|\])/gm, "");
+            if(text.length > 256) {
+              player.send({
+                gameEvents: [{type: "playerMessage", uid: "<server>", 
+                text: "Your message exceeded the maximum length of 256" }]
+              })
+              return
+            }
+
+            const msgEvent = {type: "playerMessage", uid: player.uid, text}
+            // queue event
+            game.messages.push(msgEvent)
+            // limit saved messages to 32
+            if(game.messages.length > 32)
+              game.messages.shift()
+
+            // relay and broadcast chat messages
+            Object.values(game.players).forEach(p => 
+              p.send({
+                gameEvents: [msgEvent]
+              })
+            )
+          }
+
 
           // ---------------------------- HANDLE GAME EVENTS ------------
         }
@@ -200,7 +230,7 @@ websocket.on('connection', (ws) => {
               x: p.x,
               y: p.y,
               uid: p.uid
-            }))
+            })).concat(game.messages)
           })
         } else {
           console.log("Game not found")

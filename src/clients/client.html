@@ -1,22 +1,50 @@
+<div class="positioned" id="income"></div>
+<div class="positioned" id="wealth"></div>
+<div class="positioned" id="chat" onclick="hide()">
+  <span id="chat_history">
+
+  </span>
+  <textarea id="chat_input">
+
+  </textarea>
+</div>
+<div class="container" onclick="myFunction(this)">
+  <div class="bar1"></div>
+  <div class="bar2"></div>
+  <div class="bar3"></div>
+</div>
+
 <script>
-  let app = new PIXI.Application({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
-  document.getElementById("page").appendChild(app.view);
-  window.addEventListener("resize", function () {
-    app.renderer.resize(window.innerWidth, window.innerHeight);
-  });
-
-  let sprite = PIXI.Sprite.from("sample.png");
-
   // keyboard events
   keys = {}
   window.addEventListener("keydown", e => {
     keys[e.key] = true
+
+    if(e.key == "t") {
+      // Focus and open chat
+      document.getElementById("chat").classList.remove("hidden")
+      document.getElementById("chat_input").focus()
+    }
   })
   window.addEventListener("keyup", e => {
     keys[e.key] = false
+  })
+  const chat_input = document.getElementById("chat_input")
+  chat_input.addEventListener("keydown", (e) => {
+    if(e.which === 13 && !e.ctrlKey) {
+      if(!e.repeat) {
+        const text = chat_input.value.trim()
+        chat_input.value = ""
+        if(text) {
+          send({
+            game_event: true,
+            type: "playerMessage",
+            text
+          })
+        }
+      }
+      e.preventDefault()
+    }
   })
 
   const deltaTime = 0.2;
@@ -39,6 +67,7 @@
     }
     elapsed = 0
   }, deltaTime * 1000 + 5); // add a correction to prevent faulty anti-cheat triggers
+
 
   function myFunction(x) {
     x.classList.toggle("change");
@@ -186,25 +215,49 @@
       }
     }
   }
+
+  // PixiJS code
+  let app = new PIXI.Application({
+    width: window.innerWidth,
+    height: window.innerHeight,
+  });
+  document.getElementById("page").appendChild(app.view);
+  window.addEventListener("resize", function () {
+    app.renderer.resize(window.innerWidth, window.innerHeight);
+  });
+
 </script>
 
-<div class="income"></div>
-<div class="wealth"></div>
-<div class="chat" id="chat" onclick="hide()"></div>
-<div class="close" id="close" onclick="hide()"></div>
-<div class="container" onclick="myFunction(this)">
-  <div class="bar1"></div>
-  <div class="bar2"></div>
-  <div class="bar3"></div>
-</div>
-
 <style>
+  * {
+    color: white;
+  }
+
+  #chat_history {
+    overflow-y: scroll;
+    white-space: pre-line;
+    height: 90%;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  #chat_input {
+    margin: 10px;
+    padding: 0;
+    background: none;
+    border: 2px rgba(0, 0, 0, 0.5) solid;
+    border-radius: 4px;
+    resize: none;
+  }
+
+  #chat_history::-webkit-scrollbar { 
+      display: none;
+  }
+
   .hidden {
     display: none;
   }
-  .close {
-    
-  }
+
   .container {
     display: inline-block;
     cursor: pointer;
@@ -234,34 +287,32 @@
   .change .bar3 {
     transform: translate(0, -11px) rotate(45deg);
   }
-  body {
-    background-color: aqua;
-  }
-  .income {
+
+  .positioned {
     position: absolute;
+    border: 3px solid black;
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 5px;
+  }
+
+  #income {
     top: 5px;
     left: 5px;
     width: 300px;
     height: 150px;
-    border: 3px solid black;
-    background: rgba(0, 0, 0, 0.1);
   }
-  .wealth {
-    position: absolute;
+  #wealth {
     top: 5px;
     right: 5px;
     width: 150px;
     height: 200px;
-    border: 3px solid black;
-    background: rgba(0, 0, 0, 0.1);
   }
-  .chat {
-    position: absolute;
+  #chat {
+    display: flex;
+    flex-direction: column;
     bottom: 5px;
     left: 5px;
     width: 350px;
     height: 400px;
-    border: 3px solid black;
-    background: rgba(0, 0, 0, 0.1);
   }
 </style>
