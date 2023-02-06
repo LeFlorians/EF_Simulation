@@ -229,6 +229,33 @@
   window.addEventListener("resize", function () {
     app.renderer.resize(window.innerWidth, window.innerHeight);
   });
+  // background
+  const background = new PIXI.Graphics()
+  const mapWidth = 3, mapHeight = 3, vel = 20
+  colors = [
+    [0xff0000, 0x00ff00, 0x0000ff],
+    [0xffff00, 0x00ffff, 0xff00ff],
+    [0xffffff, 0x000000, 0xababab]
+  ]
+  app.ticker.add(delta => {
+    const state = me()
+    background.clear()
+    var mapX = Math.floor(state.x * speed) % mapWidth, mapY = Math.floor(state.y * speed) % mapHeight
+    if(mapX < 0) mapX = -mapX + mapWidth;
+    if(mapY < 0) mapY = -mapY + mapHeight;
+    const playerX = state.x * speed - Math.floor(state.x * speed), playerY = state.y * speed - Math.floor(state.y * speed)
+
+    background.beginFill( colors[mapX] [mapY] )
+    // draw background
+    background.drawRect(0, 0, app.renderer.width, app.renderer.height)
+
+    background.beginFill(0xffffff)
+    background.drawCircle(playerX * app.renderer.width, playerY * app.renderer.height, 50)
+
+    // draw player
+    console.log((state.x * 5) % 3)
+  })
+  app.stage.addChild(background)
 
 </script>
 
