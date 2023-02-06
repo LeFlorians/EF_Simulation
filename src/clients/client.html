@@ -15,6 +15,10 @@
 </div>
 
 <script>
+  // load chat history
+  document.getElementById("chat_history").innerText = cached_messages
+  cached_messages = ""
+
   // keyboard events
   keys = {}
   window.addEventListener("keydown", e => {

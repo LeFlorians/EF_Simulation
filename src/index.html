@@ -57,6 +57,8 @@
             return getPlayer(storage.getItem("uid"))
         }
 
+        var cached_messages = ""
+
         // Persistent values, access through storage.getItem(key)
         const persistent = ["uid", "secret", "gid"]
         init(msg => {
@@ -99,10 +101,16 @@
 
                         case "playerMessage": {
                             // Append message to chat
+                            if(!e.text)
+                                return
+                            const message = "\n[" + e.uid + "] " + e.text
                             const chat = document.getElementById("chat_history")
                             if(chat)
-                                chat.innerText += "\n[" + e.uid + "] " + e.text;
+                                chat.innerText += message
+                            else
+                                cached_messages += message
                         }
+
                         // ---------------------------- HANDLE GAME EVENTS ------------
                     }
                 })

@@ -22,7 +22,7 @@ function generateUniqueId() {
   let id = "";
   do {
     const possibleCharacters = 
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+      "abcdefghijklmnopqrstuvwxyz0123456789";
 
     id = "";
 
@@ -72,7 +72,8 @@ class Player {
   }
 
   send(obj) {
-    this.ws.send(JSON.stringify(obj))
+    if(obj && this.ws)
+      this.ws.send(JSON.stringify(obj))
   } 
 }
 
@@ -110,7 +111,7 @@ const maxVelocity = 5 // units / second
 
 const websocket = new WebSocketServer({ port: 8082 });
 websocket.on('connection', (ws) => {
-  const sendMe = (obj) => { ws.send(JSON.stringify(obj)) };
+  const sendMe = (obj) => { ws?.send(JSON.stringify(obj)) };
     ws.on('close', () => {
       console.log('Client has disconnected!'); 
       if(ws.player?.ws) 
