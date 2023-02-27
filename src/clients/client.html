@@ -51,27 +51,6 @@
     }
   })
 
-  const deltaTime = 0.2;
-  const speed = 5;
-  setInterval(() => {
-    const playerMe = me()
-
-    v_x = (keys["a"] ? -1 : 0) + (keys["d"] ? 1 : 0)
-    v_y = (keys["s"] ? -1 : 0) + (keys["w"] ? 1 : 0)
-    norm = Math.sqrt(v_x * v_x + v_y * v_y)
-    let velocity = speed * deltaTime
-    if(norm != 0){
-      velocity /= norm
-      send({
-          game_event: true,
-          type: "playerMove",
-          x: playerMe.x += v_x * velocity,
-          y: playerMe.y += v_y * velocity
-        })
-    }
-    elapsed = 0
-  }, deltaTime * 1000 + 5); // add a correction to prevent faulty anti-cheat triggers
-
 
   function myFunction(x) {
     x.classList.toggle("change");
@@ -237,23 +216,51 @@
     [0xffff00, 0x00ffff, 0xff00ff],
     [0xffffff, 0x000000, 0xababab]
   ]
+  const speed = 5;
   app.ticker.add(delta => {
-    const state = me()
+    const playerMe = me()
+
+    v_x = (keys["a"] ? -1 : 0) + (keys["d"] ? 1 : 0)
+    v_y = (keys["s"] ? 1 : 0) + (keys["w"] ? -1 : 0)
+    norm = Math.sqrt(v_x * v_x + v_y * v_y)
+    let velocity = speed * delta / 1000
+    playerMe.x += v_x * velocity
+    playerMe.y += v_y * velocity
+    // send update to server
+    if(norm != 0){
+      velocity /= norm
+      send({
+          game_event: true,
+          type: "playerMove",
+          x: playerMe.x,
+          y: playerMe.y
+        })
+    }
+    elapsed = 0
+
     background.clear()
-    var mapX = Math.floor(state.x * speed) % mapWidth, mapY = Math.floor(state.y * speed) % mapHeight
+    var mapX = Math.floor(playerMe.x * speed) % mapWidth, mapY = Math.floor(playerMe.y * speed) % mapHeight
     if(mapX < 0) mapX = -mapX + mapWidth;
     if(mapY < 0) mapY = -mapY + mapHeight;
-    const playerX = state.x * speed - Math.floor(state.x * speed), playerY = state.y * speed - Math.floor(state.y * speed)
+
 
     background.beginFill( colors[mapX] [mapY] )
     // draw background
     background.drawRect(0, 0, app.renderer.width, app.renderer.height)
 
-    background.beginFill(0xffffff)
-    background.drawCircle(playerX * app.renderer.width, playerY * app.renderer.height, 50)
-
     // draw player
-    console.log((state.x * 5) % 3)
+    Object.values(players).forEach(p => {
+      var pmx = Math.floor(p.x * speed) % mapWidth, pmy = Math.floor(p.y * speed) % mapHeight
+      if(pmx != mapX || pmy != mapY)
+        return
+      
+        const playerX = p.x * speed - Math.floor(p.x * speed), 
+          playerY = p.y * speed - Math.floor(p.y * speed)
+
+        background.beginFill(p.uid * 7894321791971 % 0xffffff)
+        background.drawCircle(playerX * app.renderer.width, playerY * app.renderer.height, 50)
+    })
+
   })
   app.stage.addChild(background)
 
