@@ -13,7 +13,12 @@
 <body>
     <script>
 
+        function color(v){
+            return (v * 7894321791971 + 438798324) % 0xffffff
+        }
+
         const storage = window.localStorage;
+        var global = {};
 
         var send;
         const init = (onmessage, onopen) => {
@@ -54,7 +59,7 @@
         var players = {}
 
         function me() {
-            return getPlayer(storage.getItem("uid"))
+            return getPlayer(global["uid"])
         }
 
         var cached_messages = ""
@@ -95,6 +100,7 @@
                         // ---------------------------- HANDLE GAME EVENTS ------------
                         case "playerMove": {
                             const p = getPlayer(e.uid)
+                            console.log("updating position of player ", e.uid)
                             p.x = e.x
                             p.y = e.y
                         }
@@ -103,10 +109,10 @@
                             // Append message to chat
                             if(!e.text)
                                 return
-                            const message = "\n[" + e.uid + "] " + e.text
+                            const message = "<span style='color: #"+color(e.uid).toString(16)+";'>\n[" + e.uid + "] " + e.text + "</span>"
                             const chat = document.getElementById("chat_history")
                             if(chat)
-                                chat.innerText += message
+                                chat.innerHTML += message
                             else
                                 cached_messages += message
                         }
@@ -118,8 +124,10 @@
 
             // save persistent values
             for (const [key, value] of Object.entries(msg)) {
-                if(persistent.includes(key))
+                if(persistent.includes(key)) {
                     storage.setItem(key, value)
+                    global[key] = value;
+                }
             }
 
         }, () => {
