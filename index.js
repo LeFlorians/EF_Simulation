@@ -107,7 +107,7 @@ class Game {
 const games = {}
 
 // Anticheat constants
-const maxVelocity = 5 // units / second
+const maxVelocity = 10000 // units / second
 
 const websocket = new WebSocketServer({ port: 8082 });
 websocket.on('connection', (ws) => {
