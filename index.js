@@ -85,6 +85,15 @@ class Game {
     this.gid = id
     this.players = {}
     this.messages = []
+
+    this.objects = []
+    for(let i = 0; i < 50; i++)
+      this.objects.push({
+        x: Math.random() * 3,
+        y: Math.random() * 3,
+        width: Math.random() * .1 + .2,
+        height: Math.random() * .1 + .2,
+      })
   }
   destroy() {
     clearInterval(this.sid)
@@ -231,7 +240,9 @@ websocket.on('connection', (ws) => {
               x: p.x,
               y: p.y,
               uid: p.uid
-            })).concat(game.messages)
+            })).concat(game.messages),
+
+            gameObjects: game.objects
           })
         } else {
           console.log("Game not found")

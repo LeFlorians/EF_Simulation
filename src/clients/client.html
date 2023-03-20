@@ -131,6 +131,16 @@
         background.drawCircle(playerX * app.renderer.width, playerY * app.renderer.height, 35)
     })
 
+    gameObjects.forEach(obj => {
+      if(mapX == Math.floor(obj.x) && mapY == Math.floor(obj.y)){
+        console.log("Drawing gameobj: ", obj)
+        background.beginFill(0)
+        let ox = obj.x - Math.floor(obj.x), oy = obj.y - Math.floor(obj.y)
+        background.drawRect(ox * app.renderer.width, oy * app.renderer.height,
+          obj.width * app.renderer.width, obj.height * app.renderer.height)
+      }
+    })
+
   })
   app.stage.addChild(background)
 

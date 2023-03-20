@@ -19,6 +19,7 @@
 
         const storage = window.localStorage;
         var global = {};
+        var gameObjects = [];
 
         var send;
         const init = (onmessage, onopen) => {
@@ -120,6 +121,10 @@
                         // ---------------------------- HANDLE GAME EVENTS ------------
                     }
                 })
+            }
+
+            if(Array.isArray(msg.gameObjects)) {
+                gameObjects = msg.gameObjects;
             }
 
             // save persistent values
