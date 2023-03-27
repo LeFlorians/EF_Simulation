@@ -87,12 +87,12 @@ class Game {
     this.messages = []
 
     this.objects = []
-    for(let i = 0; i < 50; i++)
+    for(let i = 0; i < 100; i++)
       this.objects.push({
-        x: Math.random() * 3,
-        y: Math.random() * 3,
-        width: Math.random() * .1 + .2,
-        height: Math.random() * .1 + .2,
+        x: Math.random() * 2.9 + 0.09,
+        y: Math.random() * 2.9 + 0.09,
+        width: Math.random() * .2 + .05,
+        height: Math.random() * .2 + .05,
       })
   }
   destroy() {

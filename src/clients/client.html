@@ -72,6 +72,26 @@
     document.getElementById('chat').classList.add('hidden')
   }
 
+  function isInsideAny(x, y){
+    for(let i = 0; i < gameObjects.length; i++) {
+      const obj = gameObjects[i]
+      if(Math.floor(obj.x) == Math.floor(x) && Math.floor(obj.y) == Math.floor(y)) {
+        const fx = x - Math.floor(x), fy = y - Math.floor(y), ox = obj.x - Math.floor(obj.x), oy = obj.y - Math.floor(obj.y)
+        if((fx >= ox) && (fx <= ox + obj.width) && (fy >= oy) && (fy <= oy + obj.height))
+          return true 
+      }
+    }
+    return false
+  }
+
+  function movementCollide(x, y, vx, vy) {
+    const newx = x + vx, newy = y + vy
+    if(!isInsideAny(newx, newy) || isInsideAny(x, y)) {
+      return [newx, newy]
+    }
+    return [x, y]
+  }
+
 
   // background
   const speed = 5
@@ -80,7 +100,7 @@
   colors = [
     [0xff0000, 0x00ff00, 0x0000ff],
     [0xffff00, 0x00ffff, 0xff00ff],
-    [0xffffff, 0x000000, 0xababab]
+    [0xffffff, 0xF08000, 0xababab]
   ]
   app.ticker.add(delta => {
     const playerMe = me()
@@ -89,10 +109,10 @@
     v_y = speed * ((keys["s"] ? 1 : 0) + (keys["w"] ? -1 : 0))
     norm = Math.sqrt(v_x * v_x + v_y * v_y)
     let velocity = delta / 1000
-    playerMe.x += v_x * velocity
-    playerMe.y += v_y * velocity 
-    playerMe.x = Math.max(Math.min(playerMe.x, mapWidth - 0.001), 0)
-    playerMe.y = Math.max(Math.min(playerMe.y, mapHeight - 0.001), 0)
+    const movementResult = movementCollide(playerMe.x, playerMe.y, v_x * velocity, v_y * velocity)
+
+    playerMe.x = Math.max(Math.min(movementResult[0], mapWidth - 0.001), 0)
+    playerMe.y = Math.max(Math.min(movementResult[1], mapHeight - 0.001), 0)
 
     // send update to server
     if(norm != 0){
@@ -117,6 +137,7 @@
     background.drawRect(0, 0, app.renderer.width, app.renderer.height)
 
     // draw player
+    var myX, myY;
     Object.values(players).forEach(p => {
       var pmx = Math.floor(p.x) % mapWidth, pmy = Math.floor(p.y) % mapHeight
       if(pmx != mapX || pmy != mapY)
@@ -124,6 +145,10 @@
       
         const playerX = p.x - Math.floor(p.x), 
           playerY = p.y - Math.floor(p.y)
+        
+          if(p.uid == me().uid){
+            myX = playerX, myY = playerY;
+          }
         
         background.beginFill(0)
         background.drawCircle(playerX * app.renderer.width, playerY * app.renderer.height, 40)
@@ -133,9 +158,33 @@
 
     gameObjects.forEach(obj => {
       if(mapX == Math.floor(obj.x) && mapY == Math.floor(obj.y)){
-        console.log("Drawing gameobj: ", obj)
-        background.beginFill(0)
         let ox = obj.x - Math.floor(obj.x), oy = obj.y - Math.floor(obj.y)
+
+        const vertices = [[ox, oy], [ox, oy + obj.height], [ox + obj.width, oy + obj.height], [ox + obj.width, oy]]
+
+        for(let i = 0; i < 4; i++) {
+          const v1 = vertices[i], v2 = vertices[(i + 1) % 4]
+          const d1 = [v1[0] - myX, v1[1] - myY]
+          const d2 = [v2[0] - myX, v2[1] - myY]
+          
+          // extend polygon
+          const len1 = Math.sqrt(d1[0] ** 2 + d1[1] ** 2)
+          const len2 = Math.sqrt(d2[0] ** 2 + d2[1] ** 2)
+
+          d1[0] *= 2 / len1; d1[1] *= 2 / len1;
+          d2[0] *= 2 / len2; d2[1] *= 2 / len2;
+
+          background.beginFill(0)
+          coords = [
+            v1[0]         * app.renderer.width, v1[1]         * app.renderer.height,
+            (v1[0]+d1[0]) * app.renderer.width, (v1[1]+d1[1]) * app.renderer.height,
+            (v2[0]+d2[0]) * app.renderer.width, (v2[1]+d2[1]) * app.renderer.height,
+            v2[0]         * app.renderer.width, v2[1]         * app.renderer.height,
+          ]
+          background.drawPolygon(coords)
+        }
+
+        background.beginFill(0)
         background.drawRect(ox * app.renderer.width, oy * app.renderer.height,
           obj.width * app.renderer.width, obj.height * app.renderer.height)
       }
@@ -237,5 +286,6 @@
     left: 5px;
     width: 350px;
     height: 400px;
+    background: rgba(255, 84, 246, 0.6);
   }
 </style>
