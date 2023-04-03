@@ -13,6 +13,15 @@
 <body>
     <script>
 
+        function displayMessage(uid, msg) {
+            const message = "<span style='color: #"+color(uid).toString(16)+";'>\n[" + uid + "] " + msg + "</span>"
+            const chat = document.getElementById("chat_history")
+            if(chat)
+                chat.innerHTML += message
+            else
+                cached_messages += message
+        }
+
         function color(v){
             return (v * 7894321791971 + 438798324) % 0xffffff
         }
@@ -53,8 +62,10 @@
 
         function getPlayer(uid) {
             p = players[uid]
-            if(!p)
+            if(!p) {
+                displayMessage(uid, "Joined the game.")
                 players[uid] = p = new Player(uid)
+            }
             return p
         }
         var players = {}
@@ -110,12 +121,8 @@
                             // Append message to chat
                             if(!e.text)
                                 return
-                            const message = "<span style='color: #"+color(e.uid).toString(16)+";'>\n[" + e.uid + "] " + e.text + "</span>"
-                            const chat = document.getElementById("chat_history")
-                            if(chat)
-                                chat.innerHTML += message
-                            else
-                                cached_messages += message
+                            
+                            displayMessage(e.uid, e.text)
                         }
 
                         // ---------------------------- HANDLE GAME EVENTS ------------
