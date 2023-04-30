@@ -4,11 +4,9 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Capitalist Simulator</title>
+    <title>HIDE AND SEEK on crac</title>
     <link rel="stylesheet" href="style.css">
-    
     <script src="https://pixijs.download/release/pixi.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
     <script>
@@ -23,6 +21,8 @@
         }
 
         function color(v){
+            if(typeof(v) != "number")
+                return 0xff00000
             return (v * 7894321791971 + 438798324) % 0xffffff
         }
 
@@ -57,6 +57,7 @@
                 this.x = 0
                 this.y = 0
                 this.uid = uid
+                this.speed = 5
             }
         }
 
@@ -95,7 +96,7 @@
                         .forEach( oldScriptEl => {
                         const newScriptEl = document.createElement("script");
                         Array.from(oldScriptEl.attributes).forEach( attr => {
-                            newScriptEl.setAttribute(attr.name, attr.value) 
+                            newScriptEl.setAttribute(attr.name, attr.value)
                         });
                         const scriptText = document.createTextNode(oldScriptEl.innerHTML);
                         newScriptEl.appendChild(scriptText);
@@ -115,14 +116,34 @@
                             console.log("updating position of player ", e.uid)
                             p.x = e.x
                             p.y = e.y
+                            break;
+                        }
+
+                        case "gameStart": {
+                            let playerMe = me()
+                            playerMe.speed = 5
+                            if(playerMe.uid == e.seeker)
+                                playerMe.frozen = Date.now()
+                            getPlayer(e.seeker).speed = 5.3
+                            break;
                         }
 
                         case "playerMessage": {
                             // Append message to chat
                             if(!e.text)
                                 return
-                            
                             displayMessage(e.uid, e.text)
+                            break;
+                        }
+
+                        case "win": {
+                            document.getElementById('won').style.display = 'block'
+                            break
+                        }
+
+                        case "loose": {
+                            document.getElementById('lost').style.display = 'block'
+                            break
                         }
 
                         // ---------------------------- HANDLE GAME EVENTS ------------
@@ -184,9 +205,17 @@
         </div>
     </div>
 
-    <h1 style="position:absolute;top:0;left:0;color:red;display:none;" id="disconnected">
-        Disconnected
-    </h1>
+    <<div style="position:absolute;top:0;left:0;text-shadow:5px 5px 5px #000;">
+        <h1 style="color:red;display:none;" id="disconnected">
+            Disconnected
+        </h1>
+        <h1 style="color:green;display:none;" id="won">
+            You Won!
+        </h1>
+        <h1 style="color:orange;display:none;" id="lost">
+            You Lost!
+        </h1>
+    </div>
 
 
 </body>

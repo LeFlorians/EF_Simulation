@@ -1,50 +1,14 @@
 <div id="gameCode">
   <h1 id="gameId">Game Code:</h1>
-</div>
-<div class="chart-container" style="position: relative; height:40vh; width:95vw">
-    <canvas id="chart" width="100" height="10"></canvas>
+  <button onClick="send({game_start: true})">Start Game</button>
 </div>
 <div>
 
-  <button onclick="addDataFromForm()">Add Random Data</button>
 </div>
 
 <script>
 
 // show game id
 document.getElementById("gameId").innerText += " " + storage.getItem("gid")
-
-const ctx = document.getElementById('chart');
-
-const chart = new Chart(ctx, {
-  type: "line",
-  data: {
-    labels: [0,0,0,0,0,0,0,0,0,0],
-    datasets: [{
-      backgroundColor: "rgba(0,0,0,1.0)",
-      borderColor: "rgba(0,0,0,0.1)",
-      data: [0,0,0,0,0,0,0,0,0,0]
-    }] 
-  },
-});
-function addData(chart, label, data) {
-    chart.data.labels.push(label);
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data.push(data);
-    });
-    chart.update("none");
-}
-function removeData(chart) {
-    chart.data.labels.shift();
-    chart.data.datasets.forEach((dataset) => {
-        dataset.data.shift();
-    });
-    chart.update("none");
-}
-function addDataFromForm() {
-    let y = Math.floor(Math.random() * 10)
-    addData(chart, y, y);
-    removeData(chart)
-}
 
 </script>

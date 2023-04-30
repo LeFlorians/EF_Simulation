@@ -7,6 +7,7 @@ html,body {
     color: ghostwhite;
     font-family: monospace;
     overflow: hidden;
+    overflow-y: scroll;
 }
 /*sd*/
 #mode_select {

@@ -71,7 +71,7 @@
       if(Math.floor(obj.x) == Math.floor(x) && Math.floor(obj.y) == Math.floor(y)) {
         const fx = x - Math.floor(x), fy = y - Math.floor(y), ox = obj.x - Math.floor(obj.x), oy = obj.y - Math.floor(obj.y)
         if((fx >= ox) && (fx <= ox + obj.width) && (fy >= oy) && (fy <= oy + obj.height))
-          return true 
+          return true
       }
     }
     return false
@@ -88,7 +88,6 @@
 
 
   // background
-  const speed = 5
   const background = new PIXI.Graphics()
   const mapWidth = 3, mapHeight = 3, vel = 20
   colors = [
@@ -98,14 +97,16 @@
   ]
   app.ticker.add(delta => {
     const playerMe = me()
+    const speed = me().speed
 
+  if(!playerMe.frozen || Date.now() - playerMe.frozen > 5000) {
     v_x = speed * ((keys["a"] ? -1 : 0) + (keys["d"] ? 1 : 0))
     v_y = speed * ((keys["s"] ? 1 : 0) + (keys["w"] ? -1 : 0))
     norm = Math.sqrt(v_x * v_x + v_y * v_y)
     let velocity = delta / 1000
     const movementResult = movementCollide(playerMe.x, playerMe.y, v_x * velocity, v_y * velocity)
 
-    playerMe.x = movementResult[0]  
+    playerMe.x = movementResult[0]
     playerMe.y = movementResult[1]
 
     // send update to server
@@ -118,6 +119,7 @@
           y: playerMe.y
         })
     }
+  }
     elapsed = 0
 
     background.clear()
@@ -125,8 +127,7 @@
     if(mapX < 0) mapX = -mapX + mapWidth;
     if(mapY < 0) mapY = -mapY + mapHeight;
 
-
-    background.beginFill( colors[mapX] [mapY] )
+    background.beginFill( colors[mapX][mapY] )
     // draw background
     background.drawRect(0, 0, app.renderer.width, app.renderer.height)
 
@@ -136,14 +137,21 @@
       var pmx = Math.floor(p.x) % mapWidth, pmy = Math.floor(p.y) % mapHeight
       if(pmx != mapX || pmy != mapY)
         return
-      
-        const playerX = p.x - Math.floor(p.x), 
+
+        const playerX = p.x - Math.floor(p.x),
           playerY = p.y - Math.floor(p.y)
-        
+
           if(p.uid == me().uid){
             myX = playerX, myY = playerY;
           }
-        
+
+        if(p.speed != 5) {
+            background.beginFill(0)
+            background.drawRect(playerX * app.renderer.width - 38, playerY * app.renderer.height - 38, 76, 76)
+            background.beginFill(color(p.uid))
+            background.drawRect(playerX * app.renderer.width - 35, playerY * app.renderer.height - 35, 70, 70)
+            return
+        }
         background.beginFill(0)
         background.drawCircle(playerX * app.renderer.width, playerY * app.renderer.height, 40)
         background.beginFill(color(p.uid))
@@ -160,7 +168,7 @@
           const v1 = vertices[i], v2 = vertices[(i + 1) % 4]
           const d1 = [v1[0] - myX, v1[1] - myY]
           const d2 = [v2[0] - myX, v2[1] - myY]
-          
+
           // extend polygon
           const len1 = Math.sqrt(d1[0] ** 2 + d1[1] ** 2)
           const len2 = Math.sqrt(d2[0] ** 2 + d2[1] ** 2)
@@ -216,7 +224,7 @@
     resize: none;
   }
 
-  #chat_history::-webkit-scrollbar { 
+  #chat_history::-webkit-scrollbar {
       display: none;
   }
 

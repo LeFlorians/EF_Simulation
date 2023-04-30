@@ -21,5 +21,8 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "ws": "^8.11.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
   }
 }
